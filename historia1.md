@@ -1,29 +1,29 @@
 [HU-001] Registrar Usuario en el Sistema
+
 📖 Historia de Usuario
-Como usuario nuevo
-Quiero registrarme en el sistema proporcionando mis datos personales
-Para poder comprar boletos para eventos
+
+Como usuario nuevo quiero registrarme en el sistema proporcionando mis datos personales y poder comprar boletos para eventos
 🔁 Flujo Esperado
 
-El usuario accede al formulario de registro en la aplicación
-El usuario completa los campos obligatorios: nombre, email, teléfono y contraseña
-El sistema valida que el email no esté registrado previamente en la base de datos
-El sistema encripta la contraseña usando un algoritmo de hash seguro
-El sistema asigna automáticamente el rol de CLIENTE al nuevo usuario
-El sistema registra la fecha y hora actual del registro
-El sistema establece el estado del usuario como ACTIVO
+-El usuario accede al formulario de registro en la aplicación
+-El usuario completa los campos obligatorios: nombre, email, teléfono y contraseña
+-El sistema valida que el email no esté registrado previamente en la base de datos
+-El sistema encripta la contraseña usando un algoritmo de hash seguro
+-El sistema asigna automáticamente el rol de CLIENTE al nuevo usuario
+-El sistema registra la fecha y hora actual del registro
+-El sistema establece el estado del usuario como ACTIVO
 El sistema devuelve una confirmación con los datos del usuario creado
 
 ✅ Criterios de Aceptación
 1. Estructura y lógica del servicio
 
- Se expone un endpoint POST /api/usuarios que permite el registro público
- Se valida que el campo email tenga un formato válido antes de procesarlo
- Se verifica que el email no exista previamente en la tabla usuario
- La contraseña se almacena encriptada en el campo password_hash
- El campo rol se establece automáticamente como CLIENTE
- El campo fecha_registro se completa con la fecha y hora actual
- El campo estado se establece como ACTIVO por defecto
+ -Se expone un endpoint POST /api/usuarios que permite el registro público
+ -Se valida que el campo email tenga un formato válido antes de procesarlo
+ -Se verifica que el email no exista previamente en la tabla usuario
+ -La contraseña se almacena encriptada en el campo password_hash
+ -El campo rol se establece automáticamente como CLIENTE
+ -El campo fecha_registro se completa con la fecha y hora actual
+ -El campo estado se establece como ACTIVO por defecto
 
 2. Estructura de la información
 
