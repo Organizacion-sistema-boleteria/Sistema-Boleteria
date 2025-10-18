@@ -1,307 +1,335 @@
-# Comandos GIT
+# Sistema de Boletería para Eventos
 
-### Conceptos Clave
+## Descripción
 
-- **Repositorio**: Directorio que contiene el proyecto y su historial de versiones
-- **Commit**: Instantánea de los cambios realizados en el proyecto
-- **Branch**: Línea independiente de desarrollo
-- **Merge**: Proceso de combinar cambios de diferentes ramas
-- **Remote**: Versión del repositorio alojada en un servidor remoto
+Sistema de venta de boletos digitales que permite a los usuarios comprar entradas para eventos y a los organizadores gestionar sus actividades. Resuelve problemas comunes como páginas confusas, errores al seleccionar asientos, fallas en pagos y falta de control en tiempo real del inventario.
 
+## Objetivo
 
-## Comandos Básicos de Git
-
-### Inicialización y Clonado
-
-```bash
-# Inicializar un nuevo repositorio
-git init
-
-# Clonar un repositorio existente
-git clone https://github.com/usuario/repositorio.git
-
-# Clonar con un nombre específico
-git clone https://github.com/usuario/repositorio.git mi-proyecto
-```
-
-### Seguimiento de Cambios
-
-```bash
-# Ver estado del repositorio
-git status
-
-# Agregar archivos al staging area
-git add archivo.txt
-git add .                    # Agregar todos los archivos
-git add *.js                 # Agregar archivos por patrón
-
-# Confirmar cambios
-git commit -m "Mensaje descriptivo del commit"
-git commit -am "Agregar y confirmar archivos modificados"
-
-# Ver historial de commits
-git log
-git log --oneline           # Formato compacto
-git log --graph             # Mostrar gráfico de ramas
-```
-
-### Información y Diferencias
-
-```bash
-# Ver diferencias no confirmadas
-git diff
-
-# Ver diferencias en staging area
-git diff --cached
-
-# Ver diferencias entre commits
-git diff commit1 commit2
-
-# Mostrar información de un commit específico
-git show commit-hash
-```
-
-### Deshacer Cambios
-
-```bash
-# Deshacer cambios en working directory
-git checkout -- archivo.txt
-
-# Quitar archivo del staging area
-git reset HEAD archivo.txt
-
-# Deshacer último commit (mantener cambios)
-git reset --soft HEAD~1
-
-# Deshacer último commit (eliminar cambios)
-git reset --hard HEAD~1
-```
-
-> **⚠️ Advertencia**: `git reset --hard` elimina permanentemente los cambios no confirmados.
+Desarrollar una solución que mejore la experiencia de compra para los usuarios y facilite la administración de eventos para los organizadores mediante un sistema robusto y transparente.
 
 ---
 
-## Trabajo con Ramas
+## Contexto del Problema
 
-### Gestión de Ramas
-
-```bash
-# Listar ramas locales
-git branch
-
-# Listar todas las ramas (locales y remotas)
-git branch -a
-
-# Crear nueva rama
-git branch nueva-funcionalidad
-
-# Cambiar a una rama
-git checkout nueva-funcionalidad
-
-# Crear y cambiar a nueva rama
-git checkout -b nueva-funcionalidad
-
-# Cambiar a rama (comando moderno)
-git switch nueva-funcionalidad
-
-# Crear y cambiar a nueva rama (comando moderno)
-git switch -c nueva-funcionalidad
-```
-
-### Fusión de Ramas
-
-```bash
-# Fusionar rama en la rama actual
-git merge nombre-rama
-
-# Fusión con mensaje personalizado
-git merge nombre-rama -m "Mensaje de merge"
-
-# Fusión sin fast-forward
-git merge --no-ff nombre-rama
-
-# Eliminar rama local
-git branch -d nombre-rama
-
-# Eliminar rama forzadamente
-git branch -D nombre-rama
-```
-
-### Rebase
-
-```bash
-# Rebase interactivo
-git rebase -i HEAD~3
-
-# Rebase sobre otra rama
-git rebase development
-
-# Continuar rebase después de resolver conflictos
-git rebase --continue
-
-# Abortar rebase
-git rebase --abort
-```
-
-> **Nota**: Usa rebase para mantener un historial lineal y limpio, pero evítalo en ramas compartidas.
-
----
-*-*-*-*-*-*-**/*/*/*/*/*/*/
-## GitHub: Comandos Remotos
-### Sincronización con Repositorio Remoto
-
-```bash
-# Subir cambios al repositorio remoto
-git push origin development
-# Subir nueva rama al remoto
-git push -u origin nueva-funcionalidad
-
-# Subir todas las ramas
-git push --all origin
-
-# Subir tags
-git push --tags origin
-
-# Forzar push (usar con precaución)
-git push --force origin development
-```
-
-### Obtener Cambios del Remoto
-
-```bash
-# Obtener cambios sin fusionar
-git fetch origin
-
-# Obtener y fusionar cambios
-git pull origin development
-
-# Pull con rebase
-git pull --rebase origin development
-
-# Establecer rama upstream
-git branch --set-upstream-to=origin/development development
-```
-
+En Colombia, plataformas como TuBoleta y eTicket presentan problemas técnicos frecuentes con boletos electrónicos. Qubit tuvo que desarrollar algoritmos específicos para combatir la duplicación de códigos QR, y la Superintendencia de Industria y Comercio ha investigado a operadores por no informar alternativas ante cancelación de eventos.
 
 ---
 
-## Solución de Conflictos
+## Arquitectura del Sistema
 
-### Identificar y Resolver Conflictos
+El sistema está organizado en cuatro capas:
 
-```bash
-# Ver archivos con conflictos
-git status
+### Capa de Dominio
+Define las entidades del negocio con sus atributos y relaciones. Contiene la lógica fundamental sin depender de tecnologías específicas.
 
-# Ver diferencias de conflictos
-git diff
+### Capa de Repositorio
+Maneja la persistencia de datos en base de datos relacional, definiendo tablas, tipos de datos y relaciones.
 
-# Resolver conflictos manualmente y confirmar
-git add archivo-resuelto.txt
-git commit -m "Resolver conflicto en archivo-resuelto.txt"
+### Capa de Servicio
+Implementa la lógica de negocio: validaciones, reglas de reserva, liberación automática de asientos, generación de boletos.
 
-# Usar herramienta de merge
-git mergetool
+### Capa de API
+Expone endpoints REST que permiten la comunicación con el sistema mediante JSON.
+
+---
+
+## Entidades del Sistema
+
+### Usuario
+Personas que interactúan con el sistema.
+
+**Roles disponibles:**
+- CLIENTE
+- ORGANIZADOR
+- ADMINISTRADOR
+
+**Atributos principales:**
+- usuarioId
+- nombre
+- email
+- telefono
+- passwordHash
+- rol
+- fechaRegistro
+- estado
+
+---
+
+### Sede
+Lugares físicos donde se realizan los eventos.
+
+**Atributos principales:**
+- sedeId
+- nombre
+- direccion
+- ciudad
+- capacidadTotal
+- descripcion
+- estado
+
+---
+
+### Evento
+Actividades programadas para venta de boletos.
+
+**Atributos principales:**
+- eventoId
+- titulo
+- descripcion
+- fechaEvento
+- fechaVentaInicio
+- fechaVentaFin
+- precioBase
+- categoria
+- estado
+
+---
+
+### Asiento
+Unidades de inventario dentro de cada evento.
+
+**Atributos principales:**
+- asientoId
+- eventoId
+- seccion
+- fila
+- numero
+- precio
+- tipo
+- estado
+
+---
+
+### Reserva
+Bloqueo temporal de asientos mientras el usuario completa la compra.
+
+**Tiempo de expiración:** 15 minutos
+
+**Atributos principales:**
+- reservaId
+- usuarioId
+- eventoId
+- asientosReservados
+- precioTotal
+- fechaReserva
+- fechaExpiracion
+- estado
+
+---
+
+### Pago
+Registro de transacciones financieras.
+
+**Atributos principales:**
+- pagoId
+- reservaId
+- monto
+- metodoPago
+- estado
+- fechaPago
+- referenciaExterna
+
+---
+
+### Boleto
+Comprobante digital con código QR único para acceso al evento.
+
+**Atributos principales:**
+- boletoId
+- pagoId
+- asientoId
+- codigoQR
+- fechaEmision
+- estado
+- fechaUso
+
+---
+
+### Reporte
+Consolidados de ventas, ocupación e ingresos para organizadores.
+
+**Atributos principales:**
+- reporteId
+- tipoReporte
+- eventoId
+- fechaGeneracion
+- parametros
+- datos
+
+---
+
+## Módulos de API
+
+### API de Usuarios
+- `POST /api/usuarios` - Registrar usuario
+- `POST /api/usuarios/login` - Autenticación
+- `GET /api/usuarios/{id}` - Consultar perfil
+- `PUT /api/usuarios/{id}` - Actualizar perfil
+- `DELETE /api/usuarios/{id}` - Eliminar usuario
+
+### API de Sedes
+- `POST /api/sedes` - Crear sede
+- `GET /api/sedes` - Listar sedes
+- `GET /api/sedes/{id}` - Consultar detalle
+- `PUT /api/sedes/{id}` - Actualizar sede
+- `DELETE /api/sedes/{id}` - Deshabilitar sede
+
+### API de Eventos
+- `POST /api/eventos` - Crear evento
+- `GET /api/eventos` - Listar eventos disponibles
+- `GET /api/eventos/{id}` - Consultar detalle
+- `PUT /api/eventos/{id}` - Modificar evento
+- `DELETE /api/eventos/{id}` - Cancelar evento
+
+### API de Asientos
+- `GET /api/eventos/{id}/asientos` - Ver disponibilidad
+- `PUT /api/asientos/{id}/liberar` - Liberar asiento
+
+### API de Reservas
+- `POST /api/reservas` - Crear reserva
+- `GET /api/reservas/{id}` - Consultar reserva
+- `PUT /api/reservas/{id}/confirmar` - Confirmar reserva
+- `DELETE /api/reservas/{id}` - Cancelar reserva
+
+### API de Pagos
+- `POST /api/pagos` - Procesar pago
+- `GET /api/pagos/{id}` - Consultar estado
+- `POST /api/pagos/mock` - Simular pago (pruebas)
+
+### API de Boletos
+- `POST /api/boletos` - Generar boleto
+- `GET /api/boletos/{id}` - Consultar boleto
+- `GET /api/boletos/usuario/{id}` - Boletos de usuario
+- `GET /api/boletos/validar/{qr}` - Validar boleto en acceso
+
+### API de Reportes
+- `GET /api/reportes/eventos/{id}` - Reporte de ventas por evento
+- `GET /api/reportes/usuarios/{id}` - Historial de compras
+- `GET /api/reportes/general` - Reporte consolidado
+
+---
+
+## Formato de Respuesta JSON
+
+Todas las respuestas siguen esta estructura estandarizada:
+
+```json
+{
+  "success": true,
+  "message": "Descripción del resultado",
+  "data": {},
+  "error": {}
+}
 ```
 
-## Buenas Prácticas y Recomendaciones
+### Ejemplo de respuesta exitosa:
 
-### Estructura de Commits
-
-```bash
-# Formato recomendado para mensajes de commit
-git commit -m "tipo: descripción breve
-
-Explicación detallada del cambio (opcional)
-
-Resolves #123"
-
-# Ejemplos de tipos comunes:
-# feat: nueva funcionalidad
-# fix: corrección de bug
-# docs: cambios en documentación
-# style: cambios de formato
-# refactor: refactorización de código
-# test: agregar o modificar tests
+```json
+{
+  "success": true,
+  "message": "Usuario creado exitosamente",
+  "data": {
+    "usuarioId": 1,
+    "nombre": "Juan Pérez",
+    "email": "juan@email.com",
+    "rol": "CLIENTE",
+    "fechaRegistro": "2025-09-08T15:30:00Z"
+  }
+}
 ```
 
-### Flujo de Trabajo Recomendado
+### Ejemplo de respuesta con error:
 
-```bash
-# 1. Actualizar rama principal
-git checkout development
-git pull origin development
-
-# 2. Crear rama para nueva funcionalidad
-git checkout -b feature/descripcion-funcionalidad
-
-# 3. Hacer commits frecuentes y descriptivos
-git add .
-git commit -m "feat: implementar validación de formulario"
-
-# 4. Mantener rama actualizada
-git checkout development
-git pull origin development
-git checkout feature/descripcion-funcionalidad
-git rebase development
-
-# 5. Subir cambios
-git push -u origin feature/descripcion-funcionalidad
-
-# 6. Crear Pull Request en GitHub
-# 7. Después de aprobación, fusionar y limpiar
-git checkout development
-git pull origin development
-git branch -d feature/descripcion-funcionalidad
+```json
+{
+  "success": false,
+  "message": "El asiento seleccionado ya está reservado",
+  "error": {
+    "code": 409,
+    "details": "Asiento ID 15 en el evento 10 no está disponible"
+  }
+}
 ```
 
-### Comandos de Limpieza
+---
 
-```bash
-# Limpiar archivos no rastreados
-git clean -n                # Vista previa
-git clean -f                # Ejecutar limpieza
+## Reglas de Negocio
 
-# Limpiar ramas fusionadas
-git branch --merged | grep -v development | xargs -n 1 git branch -d
+### Asientos
+- Solo pueden tener un estado a la vez: DISPONIBLE, RESERVADO o VENDIDO
+- Los asientos reservados se liberan automáticamente si expira el tiempo de reserva
+- Una vez vendidos, no pueden volver a estar disponibles
 
-# Limpiar referencias remotas obsoletas
-git remote prune origin
-```
+### Reservas
+- Tiempo máximo de validez: 15 minutos
+- Solo se pueden crear si la venta del evento está activa
+- Mínimo 1 asiento, máximo 8 asientos por reserva
 
-### Configuración Avanzada
+### Pagos
+- Cada reserva se confirma con un único pago
+- Pagos rechazados liberan los asientos automáticamente
+- Pagos aprobados generan boletos digitales
 
-```bash
-# Configurar autopush para branches
-git config --global push.default current
+### Boletos
+- Código QR único por boleto
+- Solo pueden validarse una vez
+- Al usarse cambian a estado USADO
 
-# Configurar rebase por defecto para pull
-git config --global pull.rebase true
+### Capacidad
+- La suma de asientos de un evento no puede superar la capacidad de la sede
+- No se permite sobreventa
 
-# Configurar colores
-git config --global color.ui auto
+### Roles de Usuario
+- Solo ORGANIZADORES pueden crear eventos
+- CLIENTES solo acceden a sus propias reservas y boletos
+- ADMINISTRADORES tienen control global y generan reportes
 
-# Configurar .gitignore global
-git config --global core.excludesfile ~/.gitignore_global
-```
+---
 
-### Herramientas Útiles
+## Tecnologías
 
-```bash
-# Buscar texto en historial
-git log -S "texto-a-buscar"
+| Componente | Tecnología |
+|-----------|-----------|
+| Arquitectura | REST |
+| Formato de datos | JSON |
+| Base de datos | Relacional |
+| Formato de fechas | ISO 8601 (YYYY-MM-DDTHH:mm:ssZ) |
+| Autenticación | JWT |
 
-# Encontrar quién modificó una línea
-git blame archivo.txt
+---
 
-# Buscar commit que introdujo un bug
-git bisect start
-git bisect bad              # Commit con bug
-git bisect good commit-hash # Commit sin bug
+## Códigos HTTP
 
-# Guardar cambios temporalmente
-git stash
-git stash pop
-git stash list
-git stash apply stash@{0}
-```
+### Respuestas de Éxito
+- `200 OK` - Operación exitosa
+- `201 Created` - Recurso creado
+- `204 No Content` - Acción realizada sin datos
+
+### Errores del Cliente
+- `400 Bad Request` - Datos inválidos o incompletos
+- `401 Unauthorized` - Falta autenticación
+- `403 Forbidden` - Permisos insuficientes
+- `404 Not Found` - Recurso no encontrado
+- `409 Conflict` - Conflicto de operación
+
+### Errores del Servidor
+- `500 Internal Server Error` - Fallo inesperado
+- `503 Service Unavailable` - Servicio no disponible
+
+---
+
+## Documentación
+
+Para más detalles sobre la arquitectura, capas y diagramas, consultar el [Entregable #1](./docs/entregable1.pdf)
+
+---
+
+## Autor
+
+**Juan Felipe Huérfano Rúa**  
+Tecnología en Desarrollo de Sistemas Informáticos  
+Unidades Tecnológicas de Santander  
+Bucaramanga, Colombia
+
+**Fecha:** Septiembre 2025
