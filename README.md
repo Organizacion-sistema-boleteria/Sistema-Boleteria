@@ -321,7 +321,7 @@ Todas las respuestas siguen esta estructura estandarizada:
 
 ## Documentación
 
-Para más detalles sobre la arquitectura, capas y diagramas, consultar el [Entregable #1](./docs/entregable1.pdf)
+ [Entregable #1](./docs/entregable1.pdf)
 
 ---
 
