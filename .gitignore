@@ -1,48 +1,34 @@
-# ==========================
 # Dependencias de Node.js
-# ==========================
-node_modules/        # Carpeta de paquetes instalados; se reconstruye con npm/yarn/pnpm
-npm-debug.log*       # Registros de errores de npm
-yarn-debug.log*      # Registros de depuración de Yarn
-yarn-error.log*      # Registros de errores de Yarn
+node_modules/        # Paquetes instalados
+npm-debug.log*       # Registro de errores de npm
+yarn-debug.log*      # Registro de depuración de Yarn
+yarn-error.log*      # Registro de errores de Yarn
 
-# ==========================
 # Variables de entorno
-# ==========================
-.env                 # Variables sensibles (tokens, claves); no debe versionarse
-.env.local           # Variables de entorno locales del dev
-.env.*.local         # Cualquier variante local específica por entorno (.env.dev.local, etc.)
+.env                 # Variables sensibles (tokens, claves)
+.env.local           # Variables locales
+.env.*.local         # Variantes por entorno
 
-# ==========================
 # Archivos de IDE/editores
-# ==========================
-.vscode/             # Configuraciones locales de VS Code
-.idea/               # Configuraciones de JetBrains (WebStorm, IntelliJ)
-*.swp                # Archivos swap de Vim
-*.swo                # Otros temporales de Vim
-*~                   # Backups temporales de varios editores
+.vscode/             # Configuración de VS Code
+.idea/               # Configuración de JetBrains
+*.swp                # Archivos temporales de Vim
+*.swo
+*~                   # Backups de editores
 
-# ==========================
 # Archivos de sistema
-# ==========================
-.DS_Store            # Metadatos de macOS en carpetas
-Thumbs.db            # Caché de miniaturas de Windows
+.DS_Store            # Metadatos de macOS
+Thumbs.db            # Miniaturas de Windows
 
-# ==========================
 # Archivos de compilación/build
-# ==========================
-dist/                # Salida de compilación/empacado (build final)
-build/               # Carpeta alternativa de build
-*.log                # Cualquier archivo de log generado por la app
+dist/                # Carpeta de compilación
+build/
+*.log                # Archivos de log
 
-# ==========================
-# Bases de datos locales (desarrollo)
-# ==========================
-*.sqlite             # DB SQLite usada solo en local
-*.db                 # Otros archivos de base de datos locales
+# Bases de datos locales
+*.sqlite             # BD SQLite local
+*.db                 # Otras bases locales
 
-# ==========================
 # Archivos temporales
-# ==========================
-tmp/                 # Archivos temporales creados por scripts o herramientas
-temp/                # Carpeta temporal alternativa
+tmp/                 # Temporales generados
+temp/
