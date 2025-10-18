@@ -1,34 +1,48 @@
+# ==========================
 # Dependencias de Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# ==========================
+node_modules/        # Carpeta de paquetes instalados; se reconstruye con npm/yarn/pnpm
+npm-debug.log*       # Registros de errores de npm
+yarn-debug.log*      # Registros de depuración de Yarn
+yarn-error.log*      # Registros de errores de Yarn
 
+# ==========================
 # Variables de entorno
-.env
-.env.local
-.env.*.local
+# ==========================
+.env                 # Variables sensibles (tokens, claves); no debe versionarse
+.env.local           # Variables de entorno locales del dev
+.env.*.local         # Cualquier variante local específica por entorno (.env.dev.local, etc.)
 
-# Archivos de IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# ==========================
+# Archivos de IDE/editores
+# ==========================
+.vscode/             # Configuraciones locales de VS Code
+.idea/               # Configuraciones de JetBrains (WebStorm, IntelliJ)
+*.swp                # Archivos swap de Vim
+*.swo                # Otros temporales de Vim
+*~                   # Backups temporales de varios editores
 
+# ==========================
 # Archivos de sistema
-.DS_Store
-Thumbs.db
+# ==========================
+.DS_Store            # Metadatos de macOS en carpetas
+Thumbs.db            # Caché de miniaturas de Windows
 
-# Archivos de compilación
-dist/
-build/
-*.log
+# ==========================
+# Archivos de compilación/build
+# ==========================
+dist/                # Salida de compilación/empacado (build final)
+build/               # Carpeta alternativa de build
+*.log                # Cualquier archivo de log generado por la app
 
-# Archivos de base de datos local
-*.sqlite
-*.db
+# ==========================
+# Bases de datos locales (desarrollo)
+# ==========================
+*.sqlite             # DB SQLite usada solo en local
+*.db                 # Otros archivos de base de datos locales
 
+# ==========================
 # Archivos temporales
-tmp/
-temp/
+# ==========================
+tmp/                 # Archivos temporales creados por scripts o herramientas
+temp/                # Carpeta temporal alternativa
