@@ -1,34 +1,31 @@
-# Dependencias de Node.js
-node_modules/        # Paquetes instalados
-npm-debug.log*       # Registro de errores de npm
-yarn-debug.log*      # Registro de depuración de Yarn
-yarn-error.log*      # Registro de errores de Yarn
+# Entorno virtual
+venv/
+env/
 
-# Variables de entorno
-.env                 # Variables sensibles (tokens, claves)
-.env.local           # Variables locales
-.env.*.local         # Variantes por entorno
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# Archivos de IDE/editores
-.vscode/             # Configuración de VS Code
-.idea/               # Configuración de JetBrains
-*.swp                # Archivos temporales de Vim
-*.swo
-*~                   # Backups de editores
+# Ejecutables
+*.exe
 
-# Archivos de sistema
-.DS_Store            # Metadatos de macOS
-Thumbs.db            # Miniaturas de Windows
-
-# Archivos de compilación/build
-dist/                # Carpeta de compilación
-build/
-*.log                # Archivos de log
+# IDEs
+.vscode/
+.idea/
 
 # Bases de datos locales
-*.sqlite             # BD SQLite local
-*.db                 # Otras bases locales
+*.db
+*.sqlite3
+*.sqlite
 
-# Archivos temporales
-tmp/                 # Temporales generados
-temp/
+# Variables de entorno
+.env
+
+# Logs
+*.log
+
+# Archivos ocultos de sistema
+.DS_Store
+Thumbs.db
