@@ -3,28 +3,31 @@ from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 import os
 
+# Importar el enrutador que agrupa todas las rutas del sistema
+from app.config.routers import api_router
+
 # Cargar variables del archivo .env
 load_dotenv()
 
 # Obtener valores desde las variables de entorno
-APP_NAME = os.getenv("APP_NAME", "Mi API con FastAPI")
+APP_NAME = os.getenv("APP_NAME", "Sistema de Boletería")
 DEBUG = os.getenv("DEBUG", "True")
 SECRET_KEY = os.getenv("SECRET_KEY", "clave_por_defecto")
 
 # Crear la instancia de FastAPI
 app = FastAPI(
     title=APP_NAME,
-    description="API RESTful profesional",
+    description="API RESTful del Sistema de Boletería",
     version="1.0.0",
     debug=DEBUG.lower() == "true"
 )
 
+# Incluir todos los routers reales (usuarios, sedes, eventos, pagos, etc.)
+app.include_router(api_router)
+
 # Ruta raíz
 @app.get("/")
 async def root():
-    """
-    Endpoint de bienvenida.
-    """
     return {
         "message": f"¡Bienvenido a {APP_NAME}!",
         "status": "online",
@@ -32,23 +35,9 @@ async def root():
         "debug_mode": DEBUG
     }
 
-# Endpoint con parámetros
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: str = None):
-    """
-    Ejemplo con parámetros de ruta y query.
-    """
-    return {
-        "item_id": item_id,
-        "query": q
-    }
-
 # Health check
 @app.get("/health")
 async def health_check():
-    """
-    Verifica el estado del servidor.
-    """
     return JSONResponse(
         status_code=200,
         content={"status": "healthy"}

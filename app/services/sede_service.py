@@ -1,38 +1,52 @@
-# app/services/sede_service.py
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
-
+from fastapi import HTTPException
+from app.domain.sede_model import Sede
 from app.repository.sede_repository import SedeRepository
-from app.schemas.sede_schema import SedeCreate, SedeUpdate
-
 
 class SedeService:
 
     @staticmethod
-    def create(db: Session, data: SedeCreate):
-        return SedeRepository.create(db, data)
+    def get_all(db: Session):
+        return SedeRepository.get_all(db)
 
     @staticmethod
-    def get(db: Session, sede_id: int):
+    def get_by_id(db: Session, sede_id: int):
+        return SedeRepository.get_by_id(db, sede_id)
+
+    @staticmethod
+    def create(db: Session, data):
+        if data.capacidad_total <= 0:
+            raise HTTPException(status_code=400, detail="La capacidad total debe ser mayor a 0")
+
+        new_sede = Sede(
+            nombre=data.nombre,
+            direccion=data.direccion,
+            ciudad=data.ciudad,
+            capacidad_total=data.capacidad_total,
+            descripcion=data.descripcion,
+            estado="ACTIVA"
+        )
+
+        return SedeRepository.create(db, new_sede)
+
+    @staticmethod
+    def update(db: Session, sede_id: int, data):
         sede = SedeRepository.get_by_id(db, sede_id)
         if not sede:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Sede no encontrada"
-            )
-        return sede
+            raise HTTPException(status_code=404, detail="Sede no encontrada")
 
-    @staticmethod
-    def list(db: Session):
-        return SedeRepository.list(db)
+        updates = data.dict(exclude_unset=True, by_alias=False)
 
-    @staticmethod
-    def update(db: Session, sede_id: int, data: SedeUpdate):
-        sede = SedeService.get(db, sede_id)
-        return SedeRepository.update(db, sede, data)
+        for field, value in updates.items():
+            setattr(sede, field, value)
+
+        return SedeRepository.update(db, sede)
 
     @staticmethod
     def delete(db: Session, sede_id: int):
-        sede = SedeService.get(db, sede_id)
+        sede = SedeRepository.get_by_id(db, sede_id)
+        if not sede:
+            raise HTTPException(status_code=404, detail="Sede no encontrada")
+
         SedeRepository.delete(db, sede)
-        return {"message": "Sede eliminada correctamente"}
+        return True

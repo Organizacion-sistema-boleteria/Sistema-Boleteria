@@ -1,46 +1,83 @@
-# app/services/usuario_service.py
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
+from fastapi import HTTPException
+import re
 
 from app.repository.usuario_repository import UsuarioRepository
 from app.schemas.usuario_schema import UsuarioCreate, UsuarioUpdate
+from app.core.security import hash_password
 
 
 class UsuarioService:
 
     @staticmethod
+    def validar_password(password: str):
+        if len(password) < 8 or \
+           not re.search(r"[A-Z]", password) or \
+           not re.search(r"[a-z]", password) or \
+           not re.search(r"[0-9]", password):
+
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "success": False,
+                    "message": "Contraseña inválida",
+                    "error": {
+                        "code": 400,
+                        "details": "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números"
+                    }
+                }
+            )
+
+    @staticmethod
     def create(db: Session, data: UsuarioCreate):
-        # Validar email duplicado
-        exist = UsuarioRepository.get_by_email(db, data.email)
-        if exist:
+
+        # Email duplicado
+        if UsuarioRepository.get_by_email(db, data.email):
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="El email ya está registrado."
+                status_code=409,
+                detail={
+                    "success": False,
+                    "message": "El email ya está registrado",
+                    "error": {
+                        "code": 409,
+                        "details": f"El email {data.email} ya existe en el sistema"
+                    }
+                }
             )
 
-        return UsuarioRepository.create(db, data)
+        # Validar contraseña fuerte
+        UsuarioService.validar_password(data.password)
+
+        password_hash = hash_password(data.password)
+
+        return UsuarioRepository.create(db, data, password_hash)
 
     @staticmethod
-    def get(db: Session, user_id: int):
-        user = UsuarioRepository.get_by_id(db, user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Usuario no encontrado"
-            )
-        return user
-
-    @staticmethod
-    def list(db: Session):
+    def get_all(db: Session):
         return UsuarioRepository.list(db)
 
     @staticmethod
+    def get_by_id(db: Session, user_id: int):
+        return UsuarioRepository.get_by_id(db, user_id)
+
+    @staticmethod
     def update(db: Session, user_id: int, data: UsuarioUpdate):
-        user = UsuarioService.get(db, user_id)
-        return UsuarioRepository.update(db, user, data)
+        usuario = UsuarioRepository.get_by_id(db, user_id)
+        if not usuario:
+            raise HTTPException(
+                status_code=404,
+                detail="Usuario no encontrado"
+            )
+
+        return UsuarioRepository.update(db, usuario, data)
 
     @staticmethod
     def delete(db: Session, user_id: int):
-        user = UsuarioService.get(db, user_id)
-        UsuarioRepository.delete(db, user)
-        return {"message": "Usuario eliminado correctamente"}
+        usuario = UsuarioRepository.get_by_id(db, user_id)
+        if not usuario:
+            raise HTTPException(
+                status_code=404,
+                detail="Usuario no encontrado"
+            )
+
+        UsuarioRepository.delete(db, usuario)

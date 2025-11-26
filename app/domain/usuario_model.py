@@ -1,5 +1,5 @@
-# app/domain/usuario_model.py
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime
 from app.database import Base
 
 
@@ -10,6 +10,7 @@ class Usuario(Base):
     nombre = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     telefono = Column(String, nullable=True)
-    password_hash = Column(String, nullable=False)  # <── ESTA ES LA COLUMNA REAL
-    rol = Column(String, nullable=False)
-    estado = Column(String, nullable=False)
+    password_hash = Column(String, nullable=False)
+    rol = Column(String, nullable=False, default="CLIENTE")
+    estado = Column(String, nullable=False, default="ACTIVO")
+    fecha_registro = Column(DateTime, default=datetime.utcnow)

@@ -1,4 +1,3 @@
-# app/repository/usuario_repository.py
 from sqlalchemy.orm import Session
 from app.domain.usuario_model import Usuario
 from app.schemas.usuario_schema import UsuarioCreate, UsuarioUpdate
@@ -19,14 +18,14 @@ class UsuarioRepository:
         return db.query(Usuario).all()
 
     @staticmethod
-    def create(db: Session, data: UsuarioCreate):
+    def create(db: Session, data: UsuarioCreate, password_hash: str):
         usuario = Usuario(
             nombre=data.nombre,
             email=data.email,
             telefono=data.telefono,
-            password_hash=data.password,  # <── conversión correcta
-            rol=data.rol,
-            estado=data.estado
+            password_hash=password_hash,
+            rol="CLIENTE",
+            estado="ACTIVO",
         )
         db.add(usuario)
         db.commit()
@@ -36,7 +35,12 @@ class UsuarioRepository:
     @staticmethod
     def update(db: Session, usuario: Usuario, data: UsuarioUpdate):
         for key, value in data.model_dump(exclude_unset=True).items():
+
+            if key == "password":
+                continue
+
             setattr(usuario, key, value)
+
         db.commit()
         db.refresh(usuario)
         return usuario

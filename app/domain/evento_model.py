@@ -7,7 +7,8 @@ class Evento(Base):
     __tablename__ = "eventos"
 
     evento_id = Column(Integer, primary_key=True, index=True)
-    sede_id = Column(Integer, ForeignKey("sedes.sede_id"), nullable=False)
+    # CORRECCIÓN: Apuntando a "sede" (singular), no "sedes"
+    sede_id = Column(Integer, ForeignKey("sede.sede_id"), nullable=False)
     organizador_id = Column(Integer, ForeignKey("usuarios.usuario_id"), nullable=False)
 
     titulo = Column(String, nullable=False)
