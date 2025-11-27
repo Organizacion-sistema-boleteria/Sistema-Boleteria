@@ -1,34 +1,55 @@
-# Dependencias de Node.js
-node_modules/        # Paquetes instalados
-npm-debug.log*       # Registro de errores de npm
-yarn-debug.log*      # Registro de depuración de Yarn
-yarn-error.log*      # Registro de errores de Yarn
+# --- Entorno Virtual ---
+venv/
+env/
 
-# Variables de entorno
-.env                 # Variables sensibles (tokens, claves)
-.env.local           # Variables locales
-.env.*.local         # Variantes por entorno
+# --- Cachés de Python ---
+__pycache__/
+pycache/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*$py.class
 
-# Archivos de IDE/editores
-.vscode/             # Configuración de VS Code
-.idea/               # Configuración de JetBrains
-*.swp                # Archivos temporales de Vim
-*.swo
-*~                   # Backups de editores
+# --- Ejecutables ---
+*.exe
 
-# Archivos de sistema
-.DS_Store            # Metadatos de macOS
-Thumbs.db            # Miniaturas de Windows
+# --- IDEs ---
+.vscode/
+.idea/
 
-# Archivos de compilación/build
-dist/                # Carpeta de compilación
+# --- Bases de Datos Locales ---
+*.db
+*.sqlite3
+*.sqlite
+
+# --- Variables de Entorno ---
+.env
+
+# --- Logs ---
+*.log
+
+# --- Archivos de Sistema ---
+.DS_Store
+Thumbs.db
+
+# --- Archivos de Desarrollo y Pruebas (Excluidos del Repo) ---
+tests/
+scripts/
+test_flow.py
+
+# --- Cache de Pytest ---
+.pytest_cache/
+
+# --- Archivos de cobertura ---
+.coverage
+htmlcov/
+
+# --- Build / Distribución ---
 build/
-*.log                # Archivos de log
+dist/
+*.egg-info/
 
-# Bases de datos locales
-*.sqlite             # BD SQLite local
-*.db                 # Otras bases locales
-
-# Archivos temporales
-tmp/                 # Temporales generados
-temp/
+# --- Cachés de Mypy (opcional) ---
+.mypy_cache/
+.dmypy.json
