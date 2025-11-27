@@ -1,31 +1,51 @@
-# Entorno virtual
+# --- Entorno Virtual ---
 venv/
 env/
 
-# Python cache
+# --- Cachés de Python ---
 __pycache__/
+pycache/
 *.pyc
 *.pyo
 *.pyd
+*.py[cod]
+*$py.class
 
-# Ejecutables
+# --- Ejecutables ---
 *.exe
 
-# IDEs
+# --- IDEs ---
 .vscode/
 .idea/
 
-# Bases de datos locales
+# --- Bases de Datos Locales ---
 *.db
 *.sqlite3
 *.sqlite
 
-# Variables de entorno
+# --- Variables de Entorno ---
 .env
 
-# Logs
+# --- Logs ---
 *.log
 
-# Archivos ocultos de sistema
+# --- Archivos de Sistema ---
 .DS_Store
 Thumbs.db
+
+# --- Pruebas y Desarrollo ---
+tests/
+scripts/
+test_flow.py
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Build & Dist ---
+build/
+dist/
+*.egg-info/
+
+# --- Mypy (opcional) ---
+.mypy_cache/
+.dmypy.json
