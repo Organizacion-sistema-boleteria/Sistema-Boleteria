@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 import re
 
 from app.repository.usuario_repository import UsuarioRepository
@@ -17,7 +17,7 @@ class UsuarioService:
            not re.search(r"[0-9]", password):
 
             raise HTTPException(
-                status_code=400,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
                     "success": False,
                     "message": "Contraseña inválida",
@@ -29,12 +29,16 @@ class UsuarioService:
             )
 
     @staticmethod
-    def create(db: Session, data: UsuarioCreate):
+    def create(db: Session, data: UsuarioCreate, is_admin_context: bool = False):
+        # 1. Validar el contexto: si no es admin, forzar el rol a CLIENTE.
+        # Esto asegura que el registro público (US-001) siempre sea CLIENTE.
+        if not is_admin_context:
+            data.rol = "CLIENTE" 
 
-        # Email duplicado
+        # 2. Email duplicado
         if UsuarioRepository.get_by_email(db, data.email):
             raise HTTPException(
-                status_code=409,
+                status_code=status.HTTP_409_CONFLICT,
                 detail={
                     "success": False,
                     "message": "El email ya está registrado",
@@ -45,9 +49,10 @@ class UsuarioService:
                 }
             )
 
-        # Validar contraseña fuerte
+        # 3. Validar contraseña fuerte
         UsuarioService.validar_password(data.password)
 
+        # 4. Hash y creación
         password_hash = hash_password(data.password)
 
         return UsuarioRepository.create(db, data, password_hash)
@@ -65,7 +70,7 @@ class UsuarioService:
         usuario = UsuarioRepository.get_by_id(db, user_id)
         if not usuario:
             raise HTTPException(
-                status_code=404,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail="Usuario no encontrado"
             )
 
@@ -76,7 +81,7 @@ class UsuarioService:
         usuario = UsuarioRepository.get_by_id(db, user_id)
         if not usuario:
             raise HTTPException(
-                status_code=404,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail="Usuario no encontrado"
             )
 

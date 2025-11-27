@@ -1,46 +1,43 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, field_validator
+from typing import Optional
 
+# Base Schema: Campos comunes
 class SedeBase(BaseModel):
     nombre: str
-    direccion: str | None = None
+    direccion: Optional[str] = None
     ciudad: str
-    capacidad_total: int = Field(..., alias="capacidadTotal")
-    descripcion: str | None = None
+    capacidad_total: int
+    descripcion: Optional[str] = None
+    estado: str = "ACTIVA"
 
-    model_config = {
-        "populate_by_name": True,
-        "from_attributes": True
-    }
+    @field_validator("capacidad_total")
+    def validar_capacidad_total(cls, v: int):
+        if v <= 0:
+            raise ValueError("La capacidad total debe ser un número positivo mayor a 0.")
+        return v
 
-
+# Schema para CREAR (POST)
 class SedeCreate(SedeBase):
     pass
 
-
+# Schema para ACTUALIZAR (PUT) - Todos opcionales
 class SedeUpdate(BaseModel):
-    nombre: str | None = None
-    direccion: str | None = None
-    ciudad: str | None = None
-    capacidad_total: int | None = Field(None, alias="capacidadTotal")
-    descripcion: str | None = None
-    estado: str | None = None
+    nombre: Optional[str] = None
+    direccion: Optional[str] = None
+    ciudad: Optional[str] = None
+    capacidad_total: Optional[int] = None
+    descripcion: Optional[str] = None
+    estado: Optional[str] = None
 
-    model_config = {
-        "populate_by_name": True,
-        "from_attributes": True
-    }
-
-
+# Schema para RESPUESTA (GET)
 class SedeOut(BaseModel):
-    sede_id: int = Field(..., alias="sedeId")
+    sede_id: int
     nombre: str
-    direccion: str | None
+    direccion: Optional[str]
     ciudad: str
-    capacidad_total: int = Field(..., alias="capacidadTotal")
-    descripcion: str | None
+    capacidad_total: int
+    descripcion: Optional[str]
     estado: str
 
-    model_config = {
-        "populate_by_name": True,
-        "from_attributes": True
-    }
+    class Config:
+        from_attributes = True

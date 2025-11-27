@@ -12,7 +12,8 @@ class UsuarioBase(BaseModel):
 
 class UsuarioCreate(UsuarioBase):
     password: str
-    rol: str = "CLIENTE"
+    # El rol ahora es opcional para que el router/servicio decida el valor por defecto (CLIENTE)
+    rol: Optional[str] = "CLIENTE" 
 
     @field_validator("password")
     def validar_password(cls, v: str):

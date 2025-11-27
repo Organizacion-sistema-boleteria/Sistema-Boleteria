@@ -3,11 +3,18 @@ from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 import os
 
-# Importar el enrutador que agrupa todas las rutas del sistema
+# 1. Importar la configuración de BD y los Modelos
+# Esto es CRÍTICO: Si no importas los modelos aquí, SQLAlchemy no crea las tablas.
+from app.database import engine, Base
+from app.domain import usuario_model, sede_model, evento_model  # <-- Importar TODOS tus modelos
 from app.config.routers import api_router
 
 # Cargar variables del archivo .env
 load_dotenv()
+
+# 2. Crear las tablas en la base de datos automáticamente al iniciar
+# Esto revisa si las tablas existen; si no, las crea (incluyendo 'sede').
+Base.metadata.create_all(bind=engine)
 
 # Obtener valores desde las variables de entorno
 APP_NAME = os.getenv("APP_NAME", "Sistema de Boletería")
@@ -22,7 +29,7 @@ app = FastAPI(
     debug=DEBUG.lower() == "true"
 )
 
-# Incluir todos los routers reales (usuarios, sedes, eventos, pagos, etc.)
+# Incluir todos los routers reales
 app.include_router(api_router)
 
 # Ruta raíz

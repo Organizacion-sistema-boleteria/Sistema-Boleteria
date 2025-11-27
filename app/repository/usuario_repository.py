@@ -24,7 +24,8 @@ class UsuarioRepository:
             email=data.email,
             telefono=data.telefono,
             password_hash=password_hash,
-            rol="CLIENTE",
+            # Usa el rol que viene del servicio (que ya fue validado o forzado a CLIENTE)
+            rol=data.rol, 
             estado="ACTIVO",
         )
         db.add(usuario)

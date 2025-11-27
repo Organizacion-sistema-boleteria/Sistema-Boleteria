@@ -7,7 +7,7 @@ class Evento(Base):
     __tablename__ = "eventos"
 
     evento_id = Column(Integer, primary_key=True, index=True)
-    # CORRECCIÓN: Apuntando a "sede" (singular), no "sedes"
+    # CORRECCIÓN y relación bidireccional
     sede_id = Column(Integer, ForeignKey("sede.sede_id"), nullable=False)
     organizador_id = Column(Integer, ForeignKey("usuarios.usuario_id"), nullable=False)
 
@@ -22,5 +22,6 @@ class Evento(Base):
     categoria = Column(String, nullable=False)
     estado = Column(String, default="PROGRAMADO")
 
-    sede = relationship("Sede")
+    # Usar back_populates para la relación bidireccional
+    sede = relationship("Sede", back_populates="eventos")
     organizador = relationship("Usuario")
