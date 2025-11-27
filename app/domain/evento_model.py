@@ -22,6 +22,6 @@ class Evento(Base):
     
     estado = Column(String, default="PROGRAMADO")
 
-    # Relaciones objeto
+    # Relaciones objeto (Bidireccionales)
     sede = relationship("Sede", back_populates="eventos")
     organizador = relationship("Usuario")

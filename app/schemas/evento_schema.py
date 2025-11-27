@@ -5,27 +5,47 @@ from datetime import datetime
 # --- Schemas Base ---
 
 class EventoBase(BaseModel):
-    titulo: str
-    descripcion: Optional[str] = None
+    # Campos obligatorios
     sede_id: int
+    # organizador_id NO va aquí para creación, se maneja internamente
+    titulo: str
     fecha_evento: datetime
     fecha_venta_inicio: datetime
     fecha_venta_fin: datetime
     precio_base: float
     categoria: str
+    
+    # Campos opcionales con default
+    descripcion: Optional[str] = None
     estado: str = "PROGRAMADO"
 
-    # Validaciones básicas de Pydantic (las fuertes van en el servicio)
-    @field_validator('fecha_evento')
-    def fecha_evento_futura(cls, v):
-        # US-005: Fecha evento posterior a fecha actual
-        # Nota: Pydantic valida al recibir, pero la lógica de negocio suele ir en services
+    @field_validator('fecha_venta_inicio', 'fecha_venta_fin', 'fecha_evento')
+    def validar_cronologia_fechas(cls, v, info):
+        # La validación fuerte se hace en el servicio
         return v
 
 # --- Schema CREAR (POST) ---
 class EventoCreate(EventoBase):
-    # organizador_id no se pide en el body, se saca del token
-    pass
+    # organizador_id se obtiene del token, no del body
+    
+    # ESTA ES LA MAGIA: Configuración para el ejemplo en Swagger
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "titulo": "Festival de Verano 2026",
+                    "descripcion": "El evento musical más grande del año con artistas internacionales.",
+                    "sede_id": 1,
+                    "fecha_evento": "2026-06-20T20:00:00",
+                    "fecha_venta_inicio": "2026-01-15T08:00:00",
+                    "fecha_venta_fin": "2026-06-20T15:00:00",
+                    "precio_base": 250000.00,
+                    "categoria": "CONCIERTO",
+                    "estado": "PROGRAMADO"
+                }
+            ]
+        }
+    }
 
 # --- Schema ACTUALIZAR (PUT) ---
 class EventoUpdate(BaseModel):
@@ -45,7 +65,7 @@ class SedeSimpleOut(BaseModel):
     sede_id: int
     nombre: str
     ciudad: str
-    capacidad_total: int # Según tu JSON de ejemplo
+    capacidad_total: int
 
     class Config:
         from_attributes = True

@@ -20,11 +20,11 @@ class EventoRepository:
 
     @staticmethod
     def create(db: Session, data: EventoCreate, organizador_id: int):
-        # Creamos el objeto modelo.
-        # IMPORTANTE: Asignamos el organizador_id aquí, que viene del servicio/token
+        # Creamos el objeto modelo usando los datos del schema
         evento_dict = data.model_dump()
         evento = Evento(**evento_dict)
-        evento.organizador_id = organizador_id # Asignación explícita
+        # Asignamos explícitamente el organizador que viene del token
+        evento.organizador_id = organizador_id 
         
         db.add(evento)
         db.commit()
