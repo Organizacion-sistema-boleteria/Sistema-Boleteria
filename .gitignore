@@ -33,19 +33,23 @@ pycache/
 .DS_Store
 Thumbs.db
 
-# --- Pruebas y Desarrollo ---
+# --- Archivos de Desarrollo y Pruebas (Excluidos del Repo) ---
 tests/
 scripts/
 test_flow.py
+
+# --- Cache de Pytest ---
 .pytest_cache/
+
+# --- Archivos de cobertura ---
 .coverage
 htmlcov/
 
-# --- Build & Dist ---
+# --- Build / Distribución ---
 build/
 dist/
 *.egg-info/
 
-# --- Mypy (opcional) ---
+# --- Cachés de Mypy (opcional) ---
 .mypy_cache/
 .dmypy.json
