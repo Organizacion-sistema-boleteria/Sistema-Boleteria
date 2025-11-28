@@ -3,17 +3,17 @@ from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 import os
 
-# 1. Importar la configuración de BD y los Modelos
-# Esto es CRÍTICO: Si no importas los modelos aquí, SQLAlchemy no crea las tablas.
+# 1. Importar la configuración de BD
 from app.database import engine, Base
-from app.domain import usuario_model, sede_model, evento_model  # <-- Importar TODOS tus modelos
+# 2. IMPORTAR TODOS LOS MODELOS PARA QUE SE CREEN LAS TABLAS
+# Agregamos asiento_model aquí
+from app.domain import usuario_model, sede_model, evento_model, asiento_model
 from app.config.routers import api_router
 
 # Cargar variables del archivo .env
 load_dotenv()
 
-# 2. Crear las tablas en la base de datos automáticamente al iniciar
-# Esto revisa si las tablas existen; si no, las crea (incluyendo 'sede').
+# 3. Crear las tablas automáticamente si no existen
 Base.metadata.create_all(bind=engine)
 
 # Obtener valores desde las variables de entorno

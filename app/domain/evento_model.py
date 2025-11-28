@@ -6,7 +6,6 @@ class Evento(Base):
     __tablename__ = "eventos"
 
     evento_id = Column(Integer, primary_key=True, index=True)
-    # Relaciones FK
     sede_id = Column(Integer, ForeignKey("sede.sede_id"), nullable=False)
     organizador_id = Column(Integer, ForeignKey("usuarios.usuario_id"), nullable=False)
 
@@ -22,6 +21,8 @@ class Evento(Base):
     
     estado = Column(String, default="PROGRAMADO")
 
-    # Relaciones objeto (Bidireccionales)
     sede = relationship("Sede", back_populates="eventos")
     organizador = relationship("Usuario")
+    
+    # CORRECCIÓN: Nueva relación
+    asientos = relationship("Asiento", back_populates="evento", cascade="all, delete-orphan")
