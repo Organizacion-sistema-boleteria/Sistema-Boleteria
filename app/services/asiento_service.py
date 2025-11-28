@@ -1,99 +1,55 @@
-# app/services/asiento_service.py
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from typing import List
-
+from app.schemas.asiento_schema import *
 from app.repository.asiento_repository import AsientoRepository
 from app.repository.evento_repository import EventoRepository
-from app.schemas.asiento_schema import AsientoCreate, AsientoUpdate
+from app.repository.sede_repository import SedeRepository
 from app.domain.asiento_model import Asiento
-
+from app.schemas.usuario_schema import UsuarioOut
 
 class AsientoService:
+    @staticmethod
+    def crear_asientos_masivos(db: Session, evento_id: int, data: AsientosCreateRequest, current_user: UsuarioOut):
+        evento = EventoRepository.get_by_id(db, evento_id)
+        if not evento: raise HTTPException(404, detail={"success": False, "message": "Evento no encontrado"})
+        if current_user.rol != "ADMINISTRADOR" and evento.organizador_id != current_user.usuario_id: raise HTTPException(403, detail={"success": False, "message": "Permisos insuficientes"})
+        if AsientoRepository.count_by_evento(db, evento_id) > 0: raise HTTPException(409, detail={"success": False, "message": "El evento ya tiene asientos"})
+
+        total = sum(sum(f.asientos for f in s.filas) for s in data.secciones)
+        sede = SedeRepository.get_by_id(db, evento.sede_id)
+        if total > sede.capacidad_total: raise HTTPException(400, detail={"success": False, "message": "Capacidad excedida"})
+
+        nuevos = []
+        dist = []
+        for s in data.secciones:
+            cant = 0
+            for f in s.filas:
+                cant += f.asientos
+                for i in range(1, f.asientos + 1):
+                    nuevos.append(Asiento(evento_id=evento.evento_id, seccion=s.nombre, fila=f.fila, numero=str(i), precio=s.precio, tipo=s.tipo))
+            dist.append(DistribucionItem(seccion=s.nombre, cantidad=cant, precio=s.precio))
+
+        AsientoRepository.create_bulk(db, nuevos)
+        return ResumenCreacionData(eventoId=evento.evento_id, titulo=evento.titulo, totalAsientosCreados=total, capacidadSede=sede.capacidad_total, distribucion=dist)
 
     @staticmethod
-    def create(db: Session, data: AsientoCreate) -> Asiento:
-        # validar evento existe
-        evento = EventoRepository.get_by_id(db, data.evento_id)
-        if not evento:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Evento no encontrado para asignar el asiento"
-            )
-        return AsientoRepository.create(db, data)
+    def consultar_disponibilidad(db: Session, evento_id: int):
+        if not EventoRepository.get_by_id(db, evento_id): raise HTTPException(404, detail={"success": False, "message": "Evento no encontrado"})
+        asientos = AsientoRepository.get_by_evento(db, evento_id)
+        return DisponibilidadData(
+            eventoId=evento_id, titulo="Evento", fechaEvento="", # Se puede mejorar consultando el evento de nuevo
+            totalAsientos=len(asientos), disponibles=sum(1 for a in asientos if a.estado == "DISPONIBLE"),
+            reservados=sum(1 for a in asientos if a.estado == "RESERVADO"), vendidos=sum(1 for a in asientos if a.estado == "VENDIDO"), asientos=asientos
+        )
 
     @staticmethod
-    def get(db: Session, asiento_id: int) -> Asiento:
-        asiento = AsientoRepository.get_by_id(db, asiento_id)
-        if not asiento:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Asiento no encontrado"
-            )
-        return asiento
+    def update(db: Session, id: int, data: AsientoUpdate):
+        a = AsientoRepository.get_by_id(db, id)
+        if not a: raise HTTPException(404, detail="Asiento no encontrado")
+        return AsientoRepository.update(db, a, data)
 
     @staticmethod
-    def list_by_evento(db: Session, evento_id: int) -> List[Asiento]:
-        return AsientoRepository.list_by_evento(db, evento_id)
-
-    @staticmethod
-    def update(db: Session, asiento_id: int, data: AsientoUpdate) -> Asiento:
-        asiento = AsientoService.get(db, asiento_id)
-        # no permitir cambiar a DISPONIBLE si está VENDIDO (regla de negocio)
-        if "estado" in data.model_dump(exclude_unset=True):
-            nuevo_estado = data.model_dump(exclude_unset=True)["estado"]
-            if asiento.estado == "VENDIDO" and nuevo_estado != "VENDIDO":
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="No se puede cambiar el estado de un asiento vendido"
-                )
-        return AsientoRepository.update(db, asiento, data)
-
-    @staticmethod
-    def delete(db: Session, asiento_id: int):
-        asiento = AsientoService.get(db, asiento_id)
-        if asiento.estado == "VENDIDO":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No se puede eliminar un asiento vendido"
-            )
-        AsientoRepository.delete(db, asiento)
-        return {"message": "Asiento eliminado correctamente"}
-
-    # utilidades usadas por otros services
-    @staticmethod
-    def reserve_seat(db: Session, asiento_id: int):
-        asiento = AsientoService.get(db, asiento_id)
-        if asiento.estado != "DISPONIBLE":
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Asiento {asiento_id} no está disponible (estado={asiento.estado})"
-            )
-        asiento.estado = "RESERVADO"
-        db.commit()
-        db.refresh(asiento)
-        return asiento
-
-    @staticmethod
-    def release_seat(db: Session, asiento_id: int):
-        asiento = AsientoService.get(db, asiento_id)
-        # Sólo liberamos si está RESERVADO (no revertir boletos vendidos)
-        if asiento.estado == "RESERVADO":
-            asiento.estado = "DISPONIBLE"
-            db.commit()
-            db.refresh(asiento)
-        return asiento
-
-    @staticmethod
-    def sell_seat(db: Session, asiento_id: int):
-        asiento = AsientoService.get(db, asiento_id)
-        if asiento.estado == "VENDIDO":
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Asiento {asiento_id} ya está vendido"
-            )
-        # sólo vender si está reservado o disponible (venta directa posible)
-        asiento.estado = "VENDIDO"
-        db.commit()
-        db.refresh(asiento)
-        return asiento
+    def delete(db: Session, id: int):
+        a = AsientoRepository.get_by_id(db, id)
+        if not a: raise HTTPException(404, detail="Asiento no encontrado")
+        AsientoRepository.delete(db, a)
