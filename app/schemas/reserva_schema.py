@@ -1,21 +1,61 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import List, Optional
 from datetime import datetime
 
-class ReservaBase(BaseModel):
-    usuario_id: int
+# --- Request: Crear Reserva (US-009) ---
+class ReservaCreateRequest(BaseModel):
     evento_id: int
-    precio_total: float
-    fecha_expiracion: datetime
-    estado: str = "PENDIENTE"
+    asientos: List[int] # Lista de IDs de asientos a reservar
+    
+    # Ejemplo para Swagger
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "evento_id": 1,
+                    "asientos": [15, 16, 17]
+                }
+            ]
+        }
+    }
 
-class ReservaCreate(ReservaBase):
-    asientos: list[int]
 
-class ReservaUpdate(BaseModel):
-    estado: str | None = None
-
-class ReservaOut(ReservaBase):
-    reserva_id: int
+# --- Response: Estructura interna de datos ---
+class ReservaData(BaseModel):
+    # Usamos Field(alias) para que la respuesta JSON use camelCase (reservaId, etc.)
+    reserva_id: int = Field(..., alias="reservaId")
+    usuario_id: int = Field(..., alias="usuarioId")
+    evento_id: int = Field(..., alias="eventoId")
+    
+    asientosReservados: List[int] 
+    precio_total: float = Field(..., alias="precioTotal")
+    fecha_reserva: datetime = Field(..., alias="fechaReserva")
+    fecha_expiracion: datetime = Field(..., alias="fechaExpiracion")
+    estado: str
 
     class Config:
         from_attributes = True
+        populate_by_name = True
+
+# --- Response: Wrappers para endpoints ---
+class ReservaResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional[ReservaData] = None
+    error_details: Optional[List[str]] = None 
+
+class ReservaListResponse(BaseModel):
+    success: bool
+    message: str
+    data: List[ReservaData]
+
+# --- Response: Cancelación Automática (US-010) ---
+class ExpiracionData(BaseModel):
+    reservasCanceladas: int
+    asientosLiberados: int
+    fechaEjecucion: datetime
+
+class ExpiracionResponse(BaseModel):
+    success: bool
+    message: str
+    data: ExpiracionData
