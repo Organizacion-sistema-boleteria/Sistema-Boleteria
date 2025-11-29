@@ -1,7 +1,6 @@
-# app/domain/boleto_model.py
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from app.database import Base
 
 class Boleto(Base):
@@ -12,9 +11,13 @@ class Boleto(Base):
     asiento_id = Column(Integer, ForeignKey("asientos.asiento_id"), nullable=False)
 
     codigo_qr = Column(String, unique=True, nullable=False)
-    fecha_emision = Column(DateTime, server_default=func.now())
-    estado = Column(String, default="VALIDO")  # VALIDO, USADO, EXPIRADO
-    fecha_uso = Column(DateTime, nullable=True)
+    
+    # Estado: VALIDO, USADO, EXPIRADO
+    estado = Column(String, default="VALIDO", nullable=False) 
+    
+    fecha_emision = Column(DateTime, default=datetime.utcnow, nullable=False)
+    fecha_uso = Column(DateTime, nullable=True) # Cuando el boleto es validado en el acceso
 
-    pago = relationship("Pago")
+    # Relaciones
+    pago = relationship("Pago", back_populates="boletos")
     asiento = relationship("Asiento")
