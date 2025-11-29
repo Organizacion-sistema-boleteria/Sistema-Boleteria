@@ -3,17 +3,16 @@ from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 import os
 
-# 1. Importar la configuración de BD
+# 1. Importar la configuración de BD y los Modelos
 from app.database import engine, Base
-# 2. IMPORTAR TODOS LOS MODELOS PARA QUE SE CREEN LAS TABLAS
-# Agregamos asiento_model aquí
-from app.domain import usuario_model, sede_model, evento_model, asiento_model
+# CORRECCIÓN: Agregamos reserva_model
+from app.domain import usuario_model, sede_model, evento_model, asiento_model, reserva_model 
 from app.config.routers import api_router
 
 # Cargar variables del archivo .env
 load_dotenv()
 
-# 3. Crear las tablas automáticamente si no existen
+# 2. Crear las tablas en la base de datos automáticamente al iniciar
 Base.metadata.create_all(bind=engine)
 
 # Obtener valores desde las variables de entorno

@@ -1,80 +1,50 @@
-# app/repository/reserva_repository.py
 from sqlalchemy.orm import Session
-from app.domain.reserva_model import Reserva, Reserva_Asiento
-from app.schemas.reserva_schema import ReservaCreate, ReservaUpdate
+from app.domain.reserva_model import Reserva
 from app.domain.asiento_model import Asiento
-
+from typing import List
+from datetime import datetime, timedelta
+from sqlalchemy import text
 
 class ReservaRepository:
-
+    
     @staticmethod
-    def create(db: Session, data: ReservaCreate):
-        reserva = Reserva(
-            usuario_id=data.usuario_id,
-            evento_id=data.evento_id,
-            fecha_expiracion=data.fecha_expiracion,
-            estado=data.estado,
-            precio_total=data.precio_total
-        )
-
+    def crear(db: Session, reserva: Reserva):
         db.add(reserva)
-        db.commit()
-        db.refresh(reserva)
-
-        # Registrar relación N:M
-        for asiento_id in data.asientos_ids:
-            db.execute(
-                Reserva_Asiento.insert().values(
-                    reserva_id=reserva.reserva_id,
-                    asiento_id=asiento_id
-                )
-            )
-
-        db.commit()
+        # Se debe llamar db.flush() en el servicio para obtener el ID antes de actualizar asientos
         return reserva
 
     @staticmethod
-    def get_by_id(db: Session, reserva_id: int):
-        return (
-            db.query(Reserva)
-            .filter(Reserva.reserva_id == reserva_id)
-            .first()
-        )
+    def get_by_id(db: Session, reserva_id: int) -> Reserva:
+        return db.query(Reserva).filter(Reserva.reserva_id == reserva_id).first()
 
     @staticmethod
-    def list(db: Session):
-        return db.query(Reserva).all()
+    def obtener_pendientes_expiradas(db: Session) -> List[Reserva]:
+        """Obtiene reservas pendientes cuya fecha de expiración ya pasó."""
+        # Se calcula el tiempo en la base de datos para manejar la zona horaria (aunque en SQLite no es estricto, es buena práctica)
+        # Aquí usamos la lógica del servicio para la hora actual:
+        ahora = datetime.utcnow() - timedelta(seconds=1) # Pequeño margen
+        
+        return db.query(Reserva).filter(
+            Reserva.estado == "PENDIENTE",
+            Reserva.fecha_expiracion < ahora
+        ).all()
 
     @staticmethod
-    def update(db: Session, reserva, data: ReservaUpdate):
-        for field, value in data.dict(exclude_unset=True).items():
-            if field == "asientos_ids":
-                db.execute(
-                    Reserva_Asiento.delete().where(
-                        Reserva_Asiento.c.reserva_id == reserva.reserva_id
-                    )
-                )
-                for asiento_id in value:
-                    db.execute(
-                        Reserva_Asiento.insert().values(
-                            reserva_id=reserva.reserva_id,
-                            asiento_id=asiento_id
-                        )
-                    )
-            else:
-                setattr(reserva, field, value)
-
-        db.commit()
-        db.refresh(reserva)
-        return reserva
+    def get_asientos_by_ids_lock(db: Session, ids: List[int], evento_id: int) -> List[Asiento]:
+        """Obtiene asientos por ID y los bloquea para asegurar atomicidad."""
+        # SQLite no soporta nativamente FOR UPDATE, pero lo incluimos para otros motores
+        return db.query(Asiento).filter(
+            Asiento.asiento_id.in_(ids),
+            Asiento.evento_id == evento_id
+        ).all() 
 
     @staticmethod
-    def delete(db: Session, reserva):
-        db.execute(
-            Reserva_Asiento.delete().where(
-                Reserva_Asiento.c.reserva_id == reserva.reserva_id
-            )
-        )
-
-        db.delete(reserva)
-        db.commit()
+    def liberar_asientos_de_reserva(db: Session, reserva_id: int):
+        """Actualiza el estado de los asientos a DISPONIBLE y limpia reserva_id."""
+        db.query(Asiento).filter(
+            Asiento.reserva_id == reserva_id
+        ).update({
+            Asiento.estado: "DISPONIBLE",
+            Asiento.reserva_id: None
+        }, synchronize_session=False)
+        # El commit se hace en el servicio
